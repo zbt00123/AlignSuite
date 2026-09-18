@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="panel">
+
+    <section class="primary-section">
+
+        <div class="primary-grid">
+
+            <div
+                class="icon-button primary-button"
+                id="btnFitCanvas"
+                title="撑满画布"
+                aria-label="撑满画布"
+                data-i18n-tip="tipFitCanvas"
+                role="button"
+                tabindex="0">
+                <img src="icons/fit-canvas.png" alt="">
+            </div>
+
+            <div
+                class="icon-button primary-button"
+                id="btnAutoAlign"
+                title="自动对齐图层"
+                aria-label="自动对齐图层"
+                data-i18n-tip="tipAutoAlign"
+                role="button"
+                tabindex="0">
+                <img src="icons/pixel-align.png" alt="">
+            </div>
+
+            <div
+                class="icon-button primary-button"
+                id="btnFitHeight"
+                title="基于高度对齐"
+                aria-label="基于高度对齐"
+                data-i18n-tip="tipFitHeight"
+                role="button"
+                tabindex="0">
+                <img src="icons/fit-height.png" alt="">
+            </div>
+
+            <div
+                class="icon-button primary-button"
+                id="btnFitWidth"
+                title="基于宽度对齐"
+                aria-label="基于宽度对齐"
+                data-i18n-tip="tipFitWidth"
+                role="button"
+                tabindex="0">
+                <img src="icons/fit-width.png" alt="">
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="align-to-section">
+
+        <div class="section-label" data-i18n="labelAlignTo">
+            对齐到：
+        </div>
+
+        <div class="align-to-row">
+
+            <div
+                class="icon-button ref-button active"
+                data-ref="canvas"
+                id="refCanvas"
+                title="对齐到画布"
+                aria-label="对齐到画布"
+                data-i18n-tip="tipRefCanvas"
+                role="button"
+                tabindex="0">
+                <img src="icons/ref-canvas.png" alt="">
+            </div>
+
+            <div
+                class="icon-button ref-button"
+                data-ref="selection"
+                id="refSelection"
+                title="对齐到所选"
+                aria-label="对齐到所选"
+                data-i18n-tip="tipRefSelection"
+                role="button"
+                tabindex="0">
+                <img src="icons/ref-selection.png" alt="">
+            </div>
+
+            <div
+                class="icon-button ref-button"
+                data-ref="keyObject"
+                id="refKeyObject"
+                title="对齐到关键对象"
+                aria-label="对齐到关键对象"
+                data-i18n-tip="tipRefKeyObject"
+                role="button"
+                tabindex="0">
+                <img src="icons/ref-keyobj.png" alt="">
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="operations-section">
+
+        <div class="operation-group">
+
+            <div class="section-label" data-i18n="labelAlign">
+                对齐：
+            </div>
+
+            <div class="op-grid">
+
+                <div class="icon-button op-button"
+                     data-align="left"
+                     id="alignLeft"
+                     title="左对齐"
+                     aria-label="左对齐"
+                     data-i18n-tip="alignLeft"
+                     role="button"
+                     tabindex="0">
+                    <img src="icons/align-left.png" alt="">
+                </div>
+
+                <div class="icon-button op-button"
+                     data-align="hcenter"
+                     id="alignHCenter"
+                     title="水平居中"
+                     aria-label="水平居中"
+                     data-i18n-tip="alignHCenter"
+                     role="button"
+                     tabindex="0">
+                    <img src="icons/align-hcenter.png" alt="">
+                </div>
+
+                <div class="icon-button op-button"
+                     data-align="right"
+                     id="alignRight"
+                     title="右对齐"
+                     aria-label="右对齐"
+                     data-i18n-tip="alignRight"
+                     role="button"
+                     tabindex="0">
+                    <img src="icons/align-right.png" alt="">
+                </div>
+
+                <div class="icon-button op-button"
+                     data-align="top"
+                     id="alignTop"
+                     title="顶对齐"
+                     aria-label="顶对齐"
+                     data-i18n-tip="alignTop"
+                     role="button"
+                     tabindex="0">
+                    <img src="icons/align-top.png" alt="">
+                </div>
+
+                <div class="icon-button op-button"
+                     data-align="vcenter"
+                     id="alignVCenter"
+                     title="垂直居中"
+                     aria-label="垂直居中"
+                     data-i18n-tip="alignVCenter"
+                     role="button"
+                     tabindex="0">
+                    <img src="icons/align-vcenter.png" alt="">
+                </div>
+
+                <div class="icon-button op-button"
+                     data-align="bottom"
+                     id="alignBottom"
+                     title="底对齐"
+                     aria-label="底对齐"
+                     data-i18n-tip="alignBottom"
+                     role="button"
+                     tabindex="0">
+                    <img src="icons/align-bottom.png" alt="">
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="operation-group">
+
+            <div class="section-label" data-i18n="labelDistribute">
+                分布：
+            </div>
+
+            <div class="distribution-row">
+
+                <div class="op-grid">
+
+                    <div class="icon-button op-button"
+                         data-dist="left"
+                         id="distLeft"
+                         title="按左分布"
+                         aria-label="按左分布"
+                         data-i18n-tip="distLeft"
+                         role="button"
+                         tabindex="0">
+                        <img src="icons/dist-left.png" alt="">
+                    </div>
+
+                    <div class="icon-button op-button"
+                         data-dist="hcenter"
+                         id="distHCenter"
+                         title="水平分布"
+                         aria-label="水平分布"
+                         data-i18n-tip="distHCenter"
+                         role="button"
+                         tabindex="0">
+                        <img src="icons/dist-hcenter.png" alt="">
+                    </div>
+
+                    <div class="icon-button op-button"
+                         data-dist="right"
+                         id="distRight"
+                         title="按右分布"
+                         aria-label="按右分布"
+                         data-i18n-tip="distRight"
+                         role="button"
+                         tabindex="0">
+                        <img src="icons/dist-right.png" alt="">
+                    </div>
+
+                    <div class="icon-button op-button"
+                         data-dist="top"
+                         id="distTop"
+                         title="按顶分布"
+                         aria-label="按顶分布"
+                         data-i18n-tip="distTop"
+                         role="button"
+                         tabindex="0">
+                        <img src="icons/dist-top.png" alt="">
+                    </div>
+
+                    <div class="icon-button op-button"
+                         data-dist="vcenter"
+                         id="distVCenter"
+                         title="垂直分布"
+                         aria-label="垂直分布"
+                         data-i18n-tip="distVCenter"
+                         role="button"
+                         tabindex="0">
+                        <img src="icons/dist-vcenter.png" alt="">
+                    </div>
+
+                    <div class="icon-button op-button"
+                         data-dist="bottom"
+                         id="distBottom"
+                         title="按底分布"
+                         aria-label="按底分布"
+                         data-i18n-tip="distBottom"
+                         role="button"
+                         tabindex="0">
+                        <img src="icons/dist-bottom.png" alt="">
+                    </div>
+
+                </div>
+
+                <div class="arrange-col">
+
+                    <div class="icon-button arrange-button"
+                         id="btnArrangeH"
+                         title="水平排列"
+                         aria-label="水平排列"
+                         data-i18n-tip="arrangeH"
+                         role="button"
+                         tabindex="0">
+                        <img id="imgArrangeH" src="icons/arrange-h-off.png" alt="">
+                    </div>
+
+                    <div class="icon-button arrange-button"
+                         id="btnArrangeV"
+                         title="垂直排列"
+                         aria-label="垂直排列"
+                         data-i18n-tip="arrangeV"
+                         role="button"
+                         tabindex="0">
+                        <img id="imgArrangeV" src="icons/arrange-v-off.png" alt="">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="options-section">
+
+        <div class="spacing-row">
+
+            <label for="spacingInput" data-i18n="labelSpacing">
+                间距：
+            </label>
+
+            <input
+                type="text"
+                id="spacingInput"
+                value="0"
+                inputmode="numeric"
+                autocomplete="off">
+
+            <span class="unit" data-i18n="unitPx">
+                px
+            </span>
+
+        </div>
+
+        <div
+            class="checkboxes"
+            id="checkboxRow">
+
+            <label
+                class="checkbox-label"
+                for="chkPrecise">
+
+                <input
+                    type="checkbox"
+                    id="chkPrecise">
+
+                <span data-i18n="chkPrecise">
+                    精确排列
+                </span>
+
+            </label>
+
+            <label
+                class="checkbox-label"
+                for="chkIgnoreLink">
+
+                <input
+                    type="checkbox"
+                    id="chkIgnoreLink">
+
+                <span data-i18n="chkIgnoreLink">
+                    忽略链接
+                </span>
+
+            </label>
+
+            <label
+                class="checkbox-label"
+                for="chkIgnoreAdjustment">
+
+                <input
+                    type="checkbox"
+                    id="chkIgnoreAdjustment">
+
+                <span data-i18n="chkIgnoreAdjustment">
+                    忽略调整层
+                </span>
+
+            </label>
+
+            <label
+                class="checkbox-label"
+                for="chkAlignByGroup">
+
+                <input
+                    type="checkbox"
+                    id="chkAlignByGroup">
+
+                <span data-i18n="chkAlignByGroup">
+                    按组对齐
+                </span>
+
+            </label>
+
+        </div>
+
+    </section>
+
+</div>
+
+<div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite">
+</div>
+
+<script src="index.js"></script>
+
+</body>
+</html>

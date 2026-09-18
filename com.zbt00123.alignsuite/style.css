@@ -1,0 +1,391 @@
+/* ============================================================
+   “对齐” Photoshop UXP 扩展
+   style.css — v62
+   ------------------------------------------------------------
+   v62 改动：
+     1. 字体族新增日文（Hiragino Sans / Yu Gothic / Meiryo）
+        与韩文（Malgun Gothic / Apple SD Gothic Neo）字体
+     2. 中文字体族仍置前，中文字形与 v61 完全一致
+     3. 其余样式不变（v50 面板 148 逻辑保留）
+   ============================================================ */
+
+/* ---------- 1. 盒模型 ---------- */
+
+html,
+body,
+#panel {
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ---------- 2. 主面板尺寸 ---------- */
+
+html,
+body {
+    width: 148px;
+    height: 500px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#panel {
+    width: 148px;
+    height: 500px;
+    padding: 4px;
+    overflow: hidden;
+    display: block;
+}
+
+/* ---------- 3. 主题变量 ---------- */
+
+body.theme-dark,
+body.theme-darkest,
+body.theme-medium {
+    --panel-bg: #323232;
+    --text-main: #ffffff;
+    --text-secondary: #d0d0d0;
+    --border-color: rgba(128, 128, 128, 0.55);
+    --divider-color: rgba(128, 128, 128, 0.45);
+    --hover-bg: rgba(128, 128, 128, 0.20);
+    --active-bg: rgba(128, 128, 128, 0.32);
+    --input-bg: #1e1e1e;
+    --disabled-text: rgba(255, 255, 255, 0.40);
+}
+
+body.theme-light,
+body.theme-lightest {
+    --panel-bg: #f0f0f0;
+    --text-main: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --border-color: rgba(80, 80, 80, 0.55);
+    --divider-color: rgba(80, 80, 80, 0.45);
+    --hover-bg: rgba(80, 80, 80, 0.12);
+    --active-bg: rgba(80, 80, 80, 0.20);
+    --input-bg: #ffffff;
+    --disabled-text: rgba(0, 0, 0, 0.40);
+}
+
+body {
+    background: var(--panel-bg);
+    color: var(--text-main);
+    font-family:
+        -apple-system,
+        "Segoe UI",
+        "Microsoft YaHei",
+        "PingFang SC",
+        "Hiragino Sans",
+        "Yu Gothic",
+        "Meiryo",
+        "Malgun Gothic",
+        "Apple SD Gothic Neo",
+        sans-serif;
+    font-size: 11px;
+}
+
+/* ---------- 4. 面板级 禁止选择 ---------- */
+
+#panel,
+#panel .icon-button,
+#panel .section-label,
+#panel .checkbox-label,
+#panel .spacing-row label,
+#panel .spacing-row .unit,
+#panel .divider,
+#panel .primary-section,
+#panel .align-to-section,
+#panel .operations-section,
+#panel .options-section {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ---------- 5. 通用：图标按钮 ---------- */
+
+.icon-button {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+
+    cursor: pointer;
+    outline: none;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.icon-button > img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
+
+.icon-button:hover {
+    background: var(--hover-bg);
+    border-color: var(--border-color);
+}
+
+.icon-button:focus-visible {
+    border-color: var(--text-main);
+}
+
+.icon-button.active {
+    background: var(--active-bg);
+    border-color: var(--border-color);
+}
+
+.icon-button:active {
+    background: var(--active-bg);
+}
+
+/* ---------- 6. 顶部四宫格 ---------- */
+
+.primary-section {
+    display: block;
+}
+
+.primary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    width: 122px;
+    gap: 2px;
+}
+
+.primary-button {
+    width: 60px;
+    height: 60px;
+    flex: 0 0 60px;
+}
+
+/* ---------- 7. 分隔线 ---------- */
+
+.divider {
+    height: 1px;
+    background: var(--divider-color);
+    margin: 3px 0;
+}
+
+/* ---------- 8. Section Label ---------- */
+
+.section-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 3px;
+    line-height: 14px;
+    user-select: none;
+}
+
+/* ---------- 9. 对齐到 ---------- */
+
+.align-to-section {
+    display: block;
+}
+
+.align-to-row {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.ref-button {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    margin-right: 2px;
+}
+
+.ref-button:last-child {
+    margin-right: 0;
+}
+
+/* ---------- 10. 对齐 / 分布 ---------- */
+
+.operations-section {
+    display: block;
+}
+
+.operation-group {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.operation-group:last-child {
+    margin-bottom: 0;
+}
+
+.op-grid {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100px;
+    gap: 2px;
+}
+
+.op-button {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+}
+
+/* ---------- 10.1 分布行（左侧分布 + 右侧排列） ---------- */
+
+.distribution-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.arrange-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.arrange-button {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+}
+
+/* ---------- 11. 选项区 ---------- */
+
+.options-section {
+    display: block;
+}
+
+.spacing-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.spacing-row label {
+    font-size: 11px;
+    color: var(--text-main);
+    margin-right: 4px;
+    line-height: 16px;
+    user-select: none;
+}
+
+.spacing-row input[type="text"] {
+    width: 56px;
+    padding: 3px 4px;
+    text-align: center;
+    background: var(--input-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    -webkit-user-modify: read-write !important;
+    cursor: text;
+    pointer-events: auto;
+}
+
+.spacing-row input[type="text"]:focus {
+    border-color: var(--text-main);
+}
+
+.spacing-row .unit {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-left: 4px;
+    line-height: 16px;
+    user-select: none;
+}
+
+/* ---------- 12. Checkbox ---------- */
+
+.checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    margin: 0 6px 2px 0;
+    padding: 0;
+    font-size: 11px;
+    line-height: 15px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text-main) !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin: 0 4px 0 0;
+    flex: 0 0 auto;
+}
+
+.checkbox-label span {
+    font-size: 11px;
+    color: var(--text-main) !important;
+    white-space: nowrap;
+}
+
+.checkbox-label.is-disabled {
+    cursor: default;
+}
+
+.checkbox-label.is-disabled input[type="checkbox"] {
+    opacity: 0.5;
+}
+
+.checkbox-label.is-disabled span {
+    color: var(--disabled-text) !important;
+}
+
+/* ---------- 13. Toast ---------- */
+
+.toast {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 12px;
+
+    padding: 6px 10px;
+    font-size: 11px;
+    line-height: 16px;
+    border-radius: 4px;
+
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+
+    max-height: 120px;
+    overflow: hidden;
+
+    pointer-events: none;
+    z-index: 1000;
+
+    display: none;
+
+    background: rgba(229, 246, 255, 0);
+    color: rgba(16, 82, 164, 0);
+}
+
+/* ---------- 14. 操作锁 ---------- */
+
+body.is-busy .icon-button {
+    opacity: 0.55;
+}

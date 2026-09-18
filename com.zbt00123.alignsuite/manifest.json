@@ -1,0 +1,79 @@
+{
+    "manifestVersion": 5,
+    "id": "com.zbt00123.alignsuite",
+    "name": "AlignSuite",
+    "version": "1.0.0",
+    "main": "index.html",
+
+    "host": {
+        "app": "PS",
+        "minVersion": "23.3.0"
+    },
+
+    "entrypoints": [
+        {
+            "type": "panel",
+            "id": "alignallPanel",
+
+            "label": {
+                "default": "AlignSuite"
+            },
+
+            "minimumSize": {
+                "width": 148,
+                "height": 500
+            },
+
+            "maximumSize": {
+                "width": 148,
+                "height": 500
+            },
+
+            "preferredDockedSize": {
+                "width": 148,
+                "height": 500
+            },
+
+            "preferredFloatingSize": {
+                "width": 148,
+                "height": 500
+            },
+
+            "icons": [
+                {
+                    "width": 23,
+                    "height": 23,
+                    "path": "icons/icon_dark.png",
+                    "scale": [1, 2],
+                    "theme": ["darkest", "dark", "medium"]
+                },
+                {
+                    "width": 23,
+                    "height": 23,
+                    "path": "icons/icon_light.png",
+                    "scale": [1, 2],
+                    "theme": ["lightest", "light"]
+                }
+            ]
+        }
+    ],
+
+    "icons": [
+        {
+            "width": 23,
+            "height": 23,
+            "path": "icons/icon_dark.png",
+            "scale": [1, 2],
+            "theme": ["darkest", "dark", "medium"]
+        },
+        {
+            "width": 23,
+            "height": 23,
+            "path": "icons/icon_light.png",
+            "scale": [1, 2],
+            "theme": ["lightest", "light"]
+        }
+    ],
+
+    "requiredPermissions": {}
+}
