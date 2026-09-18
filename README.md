@@ -2,7 +2,9 @@
 
 ![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)	![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)	![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=flat-square)	![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
-**AlignSuite** 是一款专业高效的 Adobe Photoshop 扩展工具，采用 UXP 技术构建。面板体积小巧，旨在通过强大的对齐、分布和智能缩放功能，大幅提升您的排版与图层管理效率。
+<img src="PNG/M_zh.png"/><img src="PNG/M_en.png"/><img src="PNG/M_ja.png"/><img src="PNG/M_ko.png"/>
+
+**AlignSuite**是一款专业高效的 Adobe Photoshop 扩展工具，采用 UXP 技术构建。面板体积小巧，旨在通过强大的对齐、分布和智能缩放功能，大幅提升您的排版与图层管理效率。
 
 ## ✨ 核心亮点：顶部四大功能
 
