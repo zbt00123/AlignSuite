@@ -38,7 +38,7 @@
 
 ## 📦 安装与使用
 
-1. 下载本仓库中最新版本的 `.ccx` 安装包 (`AlignSuite v1.0.0.ccx`)。
+1. 下载本仓库中最新版本的 `.ccx` 安装包 (`com.zbt00123.alignsuite_PS.ccx`)。
 2. 双击该文件，或通过 Adobe Creative Cloud 桌面端进行安装。
 3. 在 Photoshop 中打开任意文档，通过顶部菜单 `增效工具 (Plugins) -> AlignSuite` 打开面板即可使用。
 
