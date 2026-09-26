@@ -1,6 +1,6 @@
 # AlignSuite for Photoshop
 
-![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)  ![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)  ![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=flat-square)  ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
+![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)  ![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)  ![Version](https://img.shields.io/badge/Version-1.0.1-orange?style=flat-square)  ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
 <img src="PNG/介绍_zh.jpg"/>
 
