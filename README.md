@@ -1,6 +1,6 @@
 # AlignSuite for Photoshop
 
-![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)  ![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)  ![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=flat-square)  ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
+![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)  ![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)  ![Version](https://img.shields.io/badge/Version-1.0.1-orange?style=flat-square)  ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
 <img src="PNG/介绍_zh.jpg"/>
 
@@ -38,7 +38,7 @@
 
 ## 📦 安装与使用
 
-1. 下载本仓库中最新版本的 `.ccx` 安装包 (`AlignSuite v1.0.0.ccx`)。
+1. 下载本仓库中最新版本的 `.ccx` 安装包 (`AlignSuite.v1.0.1.ccx`)。
 2. 双击该文件，或通过 Adobe Creative Cloud 桌面端进行安装。
 3. 在 Photoshop 中打开任意文档，通过顶部菜单 `增效工具 (Plugins) -> AlignSuite` 打开面板即可使用。
 
