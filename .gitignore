@@ -1,0 +1,28 @@
+# 忽略 Python 缓存
+__pycache__/
+*.py[cod]
+
+# 忽略虚拟环境
+venv/
+env/
+
+# 忽略打包输出
+dist/
+build/
+*.spec
+
+# 忽略发布文件（已存在于 GitHub Releases）
+release/
+*.7z
+
+# 忽略日志
+logs/
+
+# 忽略开发文档
+开发手册/
+scripts/
+
+*.ccx
+*.pyc
+*.pyo
+.venv/

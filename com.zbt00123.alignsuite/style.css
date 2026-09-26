@@ -1,12 +1,6 @@
 /* ============================================================
    “对齐” Photoshop UXP 扩展
-   style.css — v62
-   ------------------------------------------------------------
-   v62 改动：
-     1. 字体族新增日文（Hiragino Sans / Yu Gothic / Meiryo）
-        与韩文（Malgun Gothic / Apple SD Gothic Neo）字体
-     2. 中文字体族仍置前，中文字形与 v61 完全一致
-     3. 其余样式不变（v50 面板 148 逻辑保留）
+   style.css — v62 (高度修正版)
    ============================================================ */
 
 /* ---------- 1. 盒模型 ---------- */
@@ -28,7 +22,7 @@ body,
 html,
 body {
     width: 148px;
-    height: 500px;
+    height: 520px; /* 从 500px 增加到 520px */
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -36,7 +30,7 @@ body {
 
 #panel {
     width: 148px;
-    height: 500px;
+    height: 520px; /* 从 500px 增加到 520px */
     padding: 4px;
     overflow: hidden;
     display: block;
