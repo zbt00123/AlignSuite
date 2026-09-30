@@ -4,7 +4,7 @@
 
 ![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)  ![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)  ![Version](https://img.shields.io/badge/Version-1.0.1-orange?style=flat-square)  ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
-<img src="PNG/介绍_zh.jpg"/>
+<img src="PNG/介绍_en.jpg"/>
 
 **AlignSuite** is a professional and efficient Adobe Photoshop extension tool built with UXP technology. The panel is compact and designed to greatly improve your layout and layer management efficiency through powerful alignment, distribution, and smart scaling features.
 
