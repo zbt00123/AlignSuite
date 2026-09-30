@@ -1,10 +1,18 @@
 # AlignSuite for Photoshop
 
+简体中文 | <a href="https://github.com/zbt00123/AlignSuite/blob/main/README_EN.md">English</a>
+
 ![Photoshop](https://img.shields.io/badge/Adobe-Photoshop-blue?style=flat-square&logo=adobe-photoshop)  ![UXP](https://img.shields.io/badge/Platform-UXP-green?style=flat-square)  ![Version](https://img.shields.io/badge/Version-1.0.1-orange?style=flat-square)  ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
 <img src="PNG/介绍_zh.jpg"/>
 
 **AlignSuite**是一款专业高效的 Adobe Photoshop 扩展工具，采用 UXP 技术构建。面板体积小巧，旨在通过强大的对齐、分布和智能缩放功能，大幅提升您的排版与图层管理效率。
+
+## 🚀 下载
+
+下载地址 1：[Adobe Creative Cloud](https://adobe.com/go/cc_plugins_discover_plugin?pluginId=4005361a&workflow=share)  
+下载地址 2：[发布页](https://github.com/zbt00123/AlignSuite/releases)
+
 
 ## ✨ 核心亮点：顶部四大功能
 

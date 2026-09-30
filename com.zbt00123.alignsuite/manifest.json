@@ -15,9 +15,7 @@
             "type": "panel",
             "id": "alignallPanel",
 
-            "label": {
-                "default": "对齐"
-            },
+            "label": "AlignSuite",
 
             "minimumSize": {
                 "width": 148,
