@@ -1,22 +1,22 @@
 /* ============================================================
    “对齐” Photoshop UXP 扩展
-   index.js — v63
+   index.js — v64
    ------------------------------------------------------------
-   v63 改动（稳定性增强 + 多语言 tooltip 修复）：
-     [1] applyLanguageToUI：用 setAttribute("title") 替代 el.title，
-         并同步到 <img> 子元素，解决 UXP 中 tooltip 不刷新的问题。
-     [2] initialize：applyLanguageToUI 之后 300ms 延迟重试一次，
-         避开 UXP 首次渲染时机。
-     [3] detectLinkPairs：利用链接传递性跳过已解析分量，
-         复杂度从 O(n²) 降为 O(分量数 × n)。
-     [4] fitSingleLayer：新增振荡检测（gap 未继续减小时停止迭代）。
-     [5] isAdjustmentLayer：新增第 6 重检测
-         （adjustmentData / adjustmentSettings）。
-     [6] readLinkPairsViaDOM：失败过多时回退到探测法。
-     [7] getLayerLinkedLayers：兼容 l.id 与 l._id。
-     [8] getSpacing：空值保护。
-   v62 改动（保留，多语言支持）：I18N 表 + t/tf/applyLanguageToUI/
-     localizeLabels/getLocalizedErrorMessage。
+   v64 改动（多画板对齐修复）：
+     [1] 新增 isArtboardLayer(layer)：通过 artboardEnabled 属性
+         判断图层是否为画板。
+     [2] 新增 getArtboardRect(doc, artboardId)：通过 batchPlay
+         获取画板的精确边界（artboardRect）。
+     [3] 新增 findParentArtboard(doc, layerId)：从任意图层向上
+         遍历父级，找到其所属的画板。
+     [4] 修改 getAlignTarget()：当 alignReference === "canvas" 时，
+         为每个操作单元动态获取其所属画板的边界作为对齐目标。
+         无画板时回退到文档画布边界。
+     [5] 修改 executeFit()：顶部缩放功能同样按画板边界计算。
+     [6] 修改 buildAlignmentPlan()：支持每个单元使用不同的目标边界。
+   v63.1 改动（保留）：命名定稿 AlignSuite + 扩展 ID 变更
+   v63 改动（保留）：稳定性增强 + 多语言 tooltip 修复
+   v62 改动（保留）：I18N 表 + t/tf/applyLanguageToUI 等
    ============================================================ */
 
 const { app, core, action, imaging, constants } = require("photoshop");
@@ -24,7 +24,7 @@ const { batchPlay } = action;
 
 
 /* ============================================================
-   多语言（i18n）—— v62 起
+   多语言（i18n）
    ============================================================ */
 
 const I18N = {
@@ -472,16 +472,16 @@ const LINK_DETECT_DELTA = 3;
 const LINK_DETECT_TOLERANCE = 0.5;
 const SELECT_STEP_DELAY = 15;
 
-/* v61：迭代缩放的最多次数和像素容差 */
 const FIT_MAX_ITERATIONS = 3;
 const FIT_PIXEL_TOLERANCE = 0.5;
-/* v63：振荡检测容差（像素）——若一次迭代的 gap 未减少至少此值，停止迭代 */
 const FIT_OSCILLATION_TOLERANCE = 0.01;
+
+/* v64：画板缓存 —— 避免重复 batchPlay 调用 */
+let artboardRectCache = new Map();
 
 const ARRANGE_ICON_ON = { h: "icons/arrange-h-on.png", v: "icons/arrange-v-on.png" };
 const ARRANGE_ICON_OFF = { h: "icons/arrange-h-off.png", v: "icons/arrange-v-off.png" };
 
-/* v62：标签对象由 localizeLabels() 填充 */
 let ALIGN_MODE_LABELS = {};
 let ALIGN_MODE_HISTORY_NAMES = {};
 let DIST_MODE_LABELS = {};
@@ -505,11 +505,10 @@ const ADJUSTMENT_KIND_STRINGS = new Set([
 ]);
 
 
-/* ---------- i18n UI 应用（v63：加强 tooltip 更新） ---------- */
+/* ---------- i18n UI 应用 ---------- */
 
 function applyLanguageToUI() {
     try {
-        /* 1) 可见文本 */
         const textEls = document.querySelectorAll("[data-i18n]");
         for (const el of textEls) {
             const key = el.getAttribute("data-i18n");
@@ -517,25 +516,20 @@ function applyLanguageToUI() {
             el.textContent = t(key);
         }
 
-        /* 2) tooltip / aria-label —— v63 加强版 */
         const tipEls = document.querySelectorAll("[data-i18n-tip]");
         for (const el of tipEls) {
             const key = el.getAttribute("data-i18n-tip");
             if (!key) continue;
             const s = t(key);
 
-            /* 用 setAttribute 替代 el.title = s（更可靠） */
             el.setAttribute("title", s);
             el.setAttribute("aria-label", s);
-            /* 后备：data-tooltip（若 UXP 未来支持） */
             el.setAttribute("data-tooltip", s);
 
-            /* 同步到内部的 img 子元素（防止鼠标落在图片上） */
             const imgs = el.querySelectorAll("img");
             for (const img of imgs) {
                 img.setAttribute("title", s);
                 img.setAttribute("aria-label", s);
-                /* alt 保持空字符串，避免破坏无障碍语义 */
             }
         }
 
@@ -678,7 +672,6 @@ function clampSpacingToInt(v) {
     n = Math.round(n);
     return Math.max(-9999, Math.min(9999, n));
 }
-/* v63：空值保护 */
 function getSpacing() {
     if (!dom.spacingInput) return 0;
     return parseSpacing(dom.spacingInput.value);
@@ -705,7 +698,7 @@ function setupEscListener() {
 }
 
 
-/* ---------- 提示本地化（v62） ---------- */
+/* ---------- 提示本地化 ---------- */
 
 function isUserCancelError(error) {
     if (!error) return false;
@@ -1006,6 +999,144 @@ function onSelectNotification(event, descriptor) {
 }
 
 
+/* ---------- v64：画板识别与边界获取 ---------- */
+
+/**
+ * 判断一个图层是否为画板。
+ * 通过 batchPlay 获取图层描述符中的 artboardEnabled 属性。
+ */
+async function isArtboardLayer(layer) {
+    if (!layer) return false;
+    const id = Number(layer.id);
+    if (!Number.isFinite(id)) return false;
+    try {
+        const result = await runBatchPlay([{
+            _obj: "get",
+            _target: [
+                { _property: "artboardEnabled" },
+                { _ref: "layer", _id: id }
+            ],
+            _options: { dialogOptions: "dontDisplay" }
+        }]);
+        if (result && result[0] && result[0].artboardEnabled !== undefined) {
+            return !!result[0].artboardEnabled;
+        }
+    } catch (e) {
+        /* 非画板图层会抛出异常，忽略 */
+    }
+    return false;
+}
+
+/**
+ * 获取指定画板的精确边界（artboardRect）。
+ * 使用缓存避免重复查询。
+ */
+async function getArtboardRect(doc, artboardId) {
+    const id = Number(artboardId);
+    if (!Number.isFinite(id) || !doc) return null;
+    if (artboardRectCache.has(id)) return artboardRectCache.get(id);
+
+    try {
+        const result = await runBatchPlay([{
+            _obj: "get",
+            _target: [
+                { _property: "artboard" },
+                { _ref: "layer", _id: id },
+                { _ref: "document", _id: doc.id }
+            ],
+            _options: { dialogOptions: "dontDisplay" }
+        }]);
+        if (result && result[0] && result[0].artboard && result[0].artboard.artboardRect) {
+            const r = result[0].artboard.artboardRect;
+            const rect = {
+                left: Number(r.left),
+                top: Number(r.top),
+                right: Number(r.right),
+                bottom: Number(r.bottom)
+            };
+            if (isValidBounds(rect)) {
+                artboardRectCache.set(id, rect);
+                if (LINK_DEBUG) console.log("[artboard] id=" + id + " rect="
+                    + rect.left + "," + rect.top + "," + rect.right + "," + rect.bottom);
+                return rect;
+            }
+        }
+    } catch (e) {
+        if (LINK_DEBUG) console.warn("[artboard] 获取画板边界失败 id=" + id, e);
+    }
+    artboardRectCache.set(id, null);
+    return null;
+}
+
+/**
+ * 从任意图层向上遍历父级，找到其所属的画板。
+ * 返回 { artboardId, artboardRect } 或 null。
+ */
+async function findParentArtboard(doc, layerId) {
+    if (!doc || !Number.isFinite(Number(layerId))) return null;
+
+    /* 构建 id -> 父级 id 映射（仅遍历一次） */
+    const parentMap = new Map();
+    const idToLayer = new Map();
+
+    function walk(layers, parentId) {
+        if (!layers || !layers.length) return;
+        for (const layer of layers) {
+            const id = Number(layer.id);
+            if (!Number.isFinite(id)) continue;
+            parentMap.set(id, parentId);
+            idToLayer.set(id, layer);
+            try {
+                const children = layer.layers;
+                if (children && typeof children.length === "number" && children.length) {
+                    walk(children, id);
+                }
+            } catch (e) {}
+        }
+    }
+    try { walk(doc.layers, null); } catch (e) { return null; }
+
+    /* 从当前图层向上查找画板 */
+    let curId = Number(layerId);
+    while (curId !== null && curId !== undefined) {
+        const layer = idToLayer.get(curId);
+        if (layer) {
+            const isAb = await isArtboardLayer(layer);
+            if (isAb) {
+                const rect = await getArtboardRect(doc, curId);
+                if (rect) return { artboardId: curId, artboardRect: rect };
+            }
+        }
+        curId = parentMap.get(curId);
+    }
+    return null;
+}
+
+/**
+ * 为操作单元获取其画板边界。
+ * 优先使用单元内第一个非调整层、非背景层的图层向上查找画板。
+ */
+async function getUnitArtboardBounds(doc, unit) {
+    if (!unit || !unit.layers || !unit.layers.length) return null;
+    for (const layer of unit.layers) {
+        if (isAdjustmentLayer(layer)) continue;
+        if (isBackgroundLayer(layer)) continue;
+        const id = Number(layer.id);
+        if (!Number.isFinite(id)) continue;
+        const found = await findParentArtboard(doc, id);
+        if (found && found.artboardRect) return found.artboardRect;
+    }
+    return null;
+}
+
+/**
+ * 清空画板缓存（每次操作开始时调用）。
+ */
+function clearArtboardCache() {
+    artboardRectCache.clear();
+}
+
+
 /* ---------- 图层基础 ---------- */
 
 function getActiveDocument() { return app.activeDocument || null; }
@@ -1039,7 +1170,6 @@ function isPositionLocked(layer) {
     try { if (layer.allLocked === true) return true; } catch (e) {}
     return false;
 }
-/* v63：新增第 6 重检测 */
 function isAdjustmentLayer(layer) {
     if (!layer) return false;
     try { const a = layer.adjustment; if (a !== undefined && a !== null) return true; } catch (e) {}
@@ -1381,7 +1511,6 @@ function computeScalePercent(mode, w, h, cw, ch) {
     return { percentX: px, percentY: py };
 }
 
-/* v61：判断当前尺寸是否已达标（像素容差 0.5） */
 function isFitTargetReached(mode, lw, lh, cw, ch) {
     const tol = FIT_PIXEL_TOLERANCE;
     if (mode === "fitCanvas") return Math.abs(lw - cw) < tol && Math.abs(lh - ch) < tol;
@@ -1390,7 +1519,6 @@ function isFitTargetReached(mode, lw, lh, cw, ch) {
     return false;
 }
 
-/* v63：计算当前与目标的像素差距（用于振荡检测） */
 function computeFitGap(mode, lw, lh, cw, ch) {
     if (mode === "fitCanvas") return Math.max(Math.abs(lw - cw), Math.abs(lh - ch));
     if (mode === "fitHeight") return Math.abs(lh - ch);
@@ -1398,7 +1526,6 @@ function computeFitGap(mode, lw, lh, cw, ch) {
     return Infinity;
 }
 
-/* v61 迭代缩放 + v63 振荡检测 */
 async function fitSingleLayer(doc, layer, mode, cw, ch) {
     if (!layer || isBackgroundLayer(layer) || isAdjustmentLayer(layer)) return;
     const id = Number(layer.id);
@@ -2059,6 +2186,7 @@ async function executeAsSingleHistoryStep(historyName, operation) {
     const doc = app.activeDocument;
     if (!doc) throw new Error("No open document");
     refreshLayerNameCache(doc);
+    clearArtboardCache();
     try {
         await core.executeAsModal(async (ctx) => {
             const sid = await ctx.hostControl.suspendHistory({ documentID: doc.id, name: historyName });
@@ -2117,40 +2245,71 @@ function getKeyObject(doc) {
     if (!found) { lastKeyObjectId = null; return null; }
     return found;
 }
-function getAlignTarget(doc, units, keyLayer) {
+
+/**
+ * v64：获取对齐目标。
+ * - "canvas"：为每个单元动态获取其所属画板边界（无画板时回退到文档画布）。
+ * - "selection"：使用所有单元边界并集。
+ * - "keyObject"：使用关键对象所在单元的边界。
+ */
+async function getAlignTarget(doc, units, keyLayer) {
     if (!units || !units.length) return null;
+
     if (alignReference === "canvas") {
-        const c = getCanvasBounds(doc);
-        return isValidBounds(c) ? c : null;
+        /* 返回一个异步解析器，调用方需要 await */
+        return { type: "perUnit" };
     }
     if (alignReference === "selection") {
         const u = getUnionBounds(units.map(x => x.bounds).filter(isValidBounds));
-        return u && isValidBounds(u) ? u : null;
+        return u && isValidBounds(u) ? { type: "fixed", bounds: u } : null;
     }
     if (alignReference === "keyObject") {
         if (!keyLayer) return null;
         const kid = Number(keyLayer.id);
-        if (Number.isFinite(kid)) for (const u of units) if (unitContainsLayer(u, kid)) return u.bounds;
+        if (Number.isFinite(kid)) for (const u of units) if (unitContainsLayer(u, kid)) {
+            return u.bounds ? { type: "fixed", bounds: u.bounds } : null;
+        }
         const kb = getLayerBounds(keyLayer);
-        return isValidBounds(kb) ? kb : null;
+        return isValidBounds(kb) ? { type: "fixed", bounds: kb } : null;
     }
     return null;
 }
-function buildAlignmentPlan(units, target, mode, keyLayer) {
+
+/**
+ * v64：构建对齐计划。
+ * 当 target 为 perUnit 时，为每个单元单独获取画板边界。
+ */
+async function buildAlignmentPlan(doc, units, target, mode, keyLayer) {
     const plan = [];
     const kid = keyLayer ? Number(keyLayer.id) : null;
+
     for (const u of units) {
         if (Number.isFinite(kid) && unitContainsLayer(u, kid)) continue;
         const b = u.bounds;
         if (!isValidBounds(b)) continue;
+
+        let targetBounds;
+        if (target.type === "perUnit") {
+            /* 多画板模式：获取当前单元所属画板边界 */
+            targetBounds = await getUnitArtboardBounds(doc, u);
+            if (!targetBounds) {
+                /* 无画板时回退到文档画布边界 */
+                targetBounds = getCanvasBounds(doc);
+            }
+        } else {
+            targetBounds = target.bounds;
+        }
+
+        if (!targetBounds || !isValidBounds(targetBounds)) continue;
+
         let dx = 0, dy = 0;
         switch (mode) {
-            case "left":    dx = target.left - b.left; break;
-            case "hcenter": dx = (target.left + target.right) / 2 - (b.left + b.right) / 2; break;
-            case "right":   dx = target.right - b.right; break;
-            case "top":     dy = target.top - b.top; break;
-            case "vcenter": dy = (target.top + target.bottom) / 2 - (b.top + b.bottom) / 2; break;
-            case "bottom":  dy = target.bottom - b.bottom; break;
+            case "left":    dx = targetBounds.left - b.left; break;
+            case "hcenter": dx = (targetBounds.left + targetBounds.right) / 2 - (b.left + b.right) / 2; break;
+            case "right":   dx = targetBounds.right - b.right; break;
+            case "top":     dy = targetBounds.top - b.top; break;
+            case "vcenter": dy = (targetBounds.top + targetBounds.bottom) / 2 - (b.top + b.bottom) / 2; break;
+            case "bottom":  dy = targetBounds.bottom - b.bottom; break;
             default: throw new Error("Unknown alignment mode");
         }
         if (!Number.isFinite(dx) || !Number.isFinite(dy)) throw new Error("Cannot compute alignment position");
@@ -2158,6 +2317,7 @@ function buildAlignmentPlan(units, target, mode, keyLayer) {
     }
     return plan;
 }
+
 async function executeAlignment(mode) {
     const hn = ALIGN_MODE_HISTORY_NAMES[mode];
     if (!hn) { showToast(t("unknownAlignMode"), "error"); return; }
@@ -2176,13 +2336,14 @@ async function executeAlignment(mode) {
         keyLayer = getKeyObject(doc);
         if (!keyLayer) { showToast(t("cannotDetermineKeyObject"), "warning"); return; }
     } else {
-        if (!getAlignTarget(doc, units, null)) { showToast(t("cannotDetermineTarget"), "error"); return; }
+        const targetCheck = await getAlignTarget(doc, units, null);
+        if (!targetCheck) { showToast(t("cannotDetermineTarget"), "error"); return; }
     }
     await executeAsSingleHistoryStep(hn, async () => {
         await runWithLinkAwareness(doc, units, [], async (fu) => {
-            const target = getAlignTarget(doc, fu, keyLayer);
+            const target = await getAlignTarget(doc, fu, keyLayer);
             if (!target) throw new Error("Cannot determine alignment target");
-            const plan = buildAlignmentPlan(fu, target, mode, keyLayer);
+            const plan = await buildAlignmentPlan(doc, fu, target, mode, keyLayer);
             for (const it of plan) {
                 if (abortRequested) break;
                 if (!needsMove(it.dx, it.dy)) continue;
@@ -2340,13 +2501,14 @@ async function executeArrange(mode) {
 
 /* ---------- 顶部缩放 ---------- */
 
+/**
+ * v64：executeFit 改为按每个单元所属画板边界计算。
+ */
 async function executeFit(mode) {
     const hn = FIT_MODE_HISTORY_NAMES[mode];
     if (!hn) { showToast(t("unknownFitMode"), "error"); return; }
     const doc = getActiveDocument();
     if (!doc) { showToast(t("noOpenDocument"), "warning"); return; }
-    const cw = Number(doc.width), ch = Number(doc.height);
-    if (!Number.isFinite(cw) || !Number.isFinite(ch) || cw <= 0 || ch <= 0) { showToast(t("cannotGetCanvasSize"), "error"); return; }
     const layers = getSelectedLayers(doc);
     if (!layers.length) { showToast(t("noSelectedLayers"), "warning"); return; }
     const alignByGroup = isAlignByGroup();
@@ -2363,11 +2525,115 @@ async function executeFit(mode) {
             const index = buildLayerIndex(doc);
             for (const u of fu) {
                 if (abortRequested) break;
-                await prepareAndFitUnit(doc, u, mode, cw, ch, index);
+                /* v64：获取当前单元所属画板的边界 */
+                let unitBounds = await getUnitArtboardBounds(doc, u);
+                if (!unitBounds) {
+                    /* 无画板时回退到文档画布边界 */
+                    unitBounds = getCanvasBounds(doc);
+                }
+                const cw = unitBounds.right - unitBounds.left;
+                const ch = unitBounds.bottom - unitBounds.top;
+                if (!Number.isFinite(cw) || !Number.isFinite(ch) || cw <= 0 || ch <= 0) {
+                    continue; /* 跳过无效画板 */
+                }
+                /* 需要把画板边界转换为相对于文档坐标的偏移量 */
+                /* fitSingleLayer 中的居中计算基于文档坐标，需要减去画板偏移 */
+                await prepareAndFitUnitWithArtboard(doc, u, mode, cw, ch, index, unitBounds);
             }
         });
     });
     showOperationResult(tf("opCompleted", FIT_MODE_LABELS[mode]));
+}
+
+/**
+ * v64：与 prepareAndFitUnit 相同，但传入画板边界偏移。
+ * 居中计算需要将画板边界转换为文档坐标系。
+ */
+async function prepareAndFitUnitWithArtboard(doc, unit, mode, cw, ch, index, artboardBounds) {
+    if (!unit || !unit.layers || !unit.layers.length) return;
+    const { savedLockings } = await unlockUnitLockedLayers(unit, "[prepareAndFitUnitWithArtboard]");
+    let err = null;
+    try {
+        if (unit.layers.length === 1) {
+            await fitSingleLayerWithArtboard(doc, unit.layers[0], mode, cw, ch, artboardBounds);
+        } else {
+            const cp = getUnitCommonParentGroup(unit, index);
+            if (cp) await fitSingleLayerWithArtboard(doc, cp, mode, cw, ch, artboardBounds);
+            else for (const l of unit.layers) {
+                if (isAdjustmentLayer(l)) continue;
+                await fitSingleLayerWithArtboard(doc, l, mode, cw, ch, artboardBounds);
+            }
+        }
+    } catch (e) { err = e; }
+    await restoreUnitLockings(savedLockings, "[prepareAndFitUnitWithArtboard]");
+    if (err) throw err;
+}
+
+/**
+ * v64：fitSingleLayer 的画板版本。
+ * 缩放目标使用画板宽高，居中位置使用画板边界。
+ */
+async function fitSingleLayerWithArtboard(doc, layer, mode, cw, ch, artboardBounds) {
+    if (!layer || isBackgroundLayer(layer) || isAdjustmentLayer(layer)) return;
+    const id = Number(layer.id);
+    if (!Number.isFinite(id)) return;
+
+    let prevGap = Infinity;
+
+    for (let iter = 0; iter < FIT_MAX_ITERATIONS; iter++) {
+        if (abortRequested) return;
+
+        let ob;
+        try { ob = getLayerBounds(layer); } catch (e) { ob = null; }
+        if (!isValidBounds(ob) || isEmptyBounds(ob)) throw new Error("Cannot compute valid bounds for current object");
+        const lw = ob.right - ob.left;
+        const lh = ob.bottom - ob.top;
+
+        const gap = computeFitGap(mode, lw, lh, cw, ch);
+
+        if (iter > 0) {
+            if (gap >= prevGap - FIT_OSCILLATION_TOLERANCE) break;
+            if (isFitTargetReached(mode, lw, lh, cw, ch)) break;
+        }
+        prevGap = gap;
+
+        const { percentX, percentY } = computeScalePercent(mode, lw, lh, cw, ch);
+
+        if (LINK_DEBUG) {
+            console.log("[fitSingleLayerWithArtboard] id=" + id + " 第 " + (iter + 1) + " 次缩放:",
+                "当前 w=" + lw.toFixed(2), "h=" + lh.toFixed(2),
+                "画板 w=" + cw.toFixed(2), "h=" + ch.toFixed(2),
+                "→ percentX=" + percentX.toFixed(4) + "%", "percentY=" + percentY.toFixed(4) + "%");
+        }
+
+        await selectOnlyLayerById(id);
+        try {
+            await layer.scale(percentX, percentY, constants.AnchorPosition.MIDDLECENTER);
+        } catch (e) {
+            console.error("[fitSingleLayerWithArtboard] scale 失败:", id, e);
+            throw e;
+        }
+    }
+
+    let nb;
+    try { nb = getLayerBounds(layer); } catch (e) { nb = null; }
+    if (!isValidBounds(nb) || isEmptyBounds(nb)) throw new Error("Cannot compute valid bounds after scaling");
+    const nw = nb.right - nb.left, nh = nb.bottom - nb.top;
+    /* v64：居中位置基于画板边界，而非文档画布 */
+    const targetCenterX = (artboardBounds.left + artboardBounds.right) / 2;
+    const targetCenterY = (artboardBounds.top + artboardBounds.bottom) / 2;
+    const dx = targetCenterX - (nb.left + nb.right) / 2;
+    const dy = targetCenterY - (nb.top + nb.bottom) / 2;
+    if (LINK_DEBUG) {
+        console.log("[fitSingleLayerWithArtboard] id=" + id + " 最终居中:",
+            "w=" + nw.toFixed(2), "h=" + nh.toFixed(2),
+            "artboard center=" + targetCenterX.toFixed(2) + "," + targetCenterY.toFixed(2),
+            "dx=" + dx.toFixed(2), "dy=" + dy.toFixed(2));
+    }
+    if (needsMove(dx, dy)) {
+        await selectOnlyLayerById(id);
+        await moveLayerBy(id, dx, dy);
+    }
 }
 
 
@@ -2507,14 +2773,12 @@ function initialize() {
     if (initialized) return;
     initialized = true;
 
-    /* v62：语言判定 + UI 应用（必须在绑定事件之前） */
     currentLang = detectLanguage();
     console.log("[i18n][detect] locale=" + (function(){ try { return String(app.locale || ""); } catch (e) { return ""; } })()
         + " currentLang=" + currentLang);
     localizeLabels();
     applyLanguageToUI();
 
-    /* v63：延迟重试，确保 UXP 刷新 tooltip */
     setTimeout(() => {
         try { applyLanguageToUI(); } catch (e) {}
     }, 300);
@@ -2548,7 +2812,7 @@ function initialize() {
     updateRefButtonsUI();
     updateUIState();
     diagnoseLinkedLayers();
-    console.log("[init] 初始化完成 (v63)");
+    console.log("[init] 初始化完成 (v64)");
 }
 
 initialize();

@@ -1,6 +1,6 @@
 /* ============================================================
    “对齐” Photoshop UXP 扩展
-   style.css — v62 (高度修正版)
+   style.css — v63 (复选框纵向排列版)
    ============================================================ */
 
 /* ---------- 1. 盒模型 ---------- */
@@ -22,7 +22,7 @@ body,
 html,
 body {
     width: 148px;
-    height: 520px; /* 从 500px 增加到 520px */
+    height: 520px;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -30,7 +30,7 @@ body {
 
 #panel {
     width: 148px;
-    height: 520px; /* 从 500px 增加到 520px */
+    height: 520px;
     padding: 4px;
     overflow: hidden;
     display: block;
@@ -305,17 +305,19 @@ body {
     user-select: none;
 }
 
-/* ---------- 12. Checkbox ---------- */
+/* ---------- 12. Checkbox（v63：始终纵向排列，每项独占一行） ---------- */
 
 .checkboxes {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: nowrap;
 }
 
 .checkbox-label {
     display: flex;
     align-items: center;
-    margin: 0 6px 2px 0;
+    margin: 0 0 2px 0;
     padding: 0;
     font-size: 11px;
     line-height: 15px;
@@ -323,6 +325,10 @@ body {
     cursor: pointer;
     user-select: none;
     color: var(--text-main) !important;
+}
+
+.checkbox-label:last-child {
+    margin-bottom: 0;
 }
 
 .checkbox-label input[type="checkbox"] {
