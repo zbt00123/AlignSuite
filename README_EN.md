@@ -46,7 +46,7 @@ The plugin UI has built-in Chinese, English, Japanese, and Korean languages, and
 
 ## 📦 Installation and Usage
 
-1. Download the latest `.ccx` installation package (`AlignSuite.v1.0.1.ccx`) from this repository.
+1. Download the latest `.ccx` installation package (`AlignSuite.v1.0.2.ccx`) from this repository.
 2. Double-click the file, or install it through the Adobe Creative Cloud desktop app.
 3. Open any document in Photoshop, then use the top menu `Plugins -> AlignSuite` to open the panel and start using it.
 
